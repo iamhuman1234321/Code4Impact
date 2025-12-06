@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ConnectKids | Opportunities</title>
+<style>
+  :root{--accent:#2563eb;--muted:#6b7280;--card:#ffffff;--bg:#f9fafb}
+  body{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:0;background:var(--bg);color:#111}
+  .container{max-width:1000px;margin:0 auto;padding:28px}
+  h1{color:var(--accent)}
+  p{color:var(--muted)}
+  .filters{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}
+  .filters > div{flex:1;min-width:180px}
+  select{width:100%;padding:10px;border-radius:10px;border:1px solid #e6e9ef}
+  button{padding:10px 14px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-weight:700;cursor:pointer;margin-top:22px;width:100%;}
+  button:hover{opacity:0.9}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:24px}
+  .card{background:#fff;padding:16px;border-radius:12px;box-shadow:0 6px 18px rgba(16,24,40,0.06)}
+  .card h3{margin-top:0;color:var(--accent)}
+  .card p{color:var(--muted)}
+  .signup-btn{background:var(--accent);color:#fff;border:none;padding:8px 10px;border-radius:8px;font-weight:700;cursor:pointer;margin-top:8px;width:100%;}
+  .signup-btn:hover{opacity:0.9}
+
+  /* Modal styles */
+  .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;z-index:10}
+  .modal-content{background:#fff;padding:24px;border-radius:12px;max-width:400px;width:90%;position:relative}
+  .close{position:absolute;top:10px;right:12px;font-size:20px;font-weight:700;cursor:pointer}
+  .modal-content input, .modal-content select{width:100%;padding:10px;margin-top:8px;border-radius:8px;border:1px solid #e6e9ef}
+  .modal-content button{margin-top:12px;width:100%;}
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Find Free Online Extracurriculars</h1>
+    <p>Filter by age and interest to find programs that work for your child. New opportunities submitted by volunteers appear automatically.</p>
+
+    <form id="filterForm" class="filters" onsubmit="return false;">
+      <div>
+        <label for="age">Age range</label>
+        <select id="age">
+          <option value="6-8">6 to 8</option>
+          <option value="9-11">9 to 11</option>
+          <option value="12-14">12 to 14</option>
+          <option value="15-18">15 to 18</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="interest">Interest</label>
+        <select id="interest">
+          <option value="arts">Arts and crafts</option>
+          <option value="music">Music</option>
+          <option value="stem">STEM</option>
+          <option value="sports">Sports and fitness</option>
+          <option value="coding">Coding</option>
+        </select>
+      </div>
+
+      <div>
+        <button onclick="showResults()">Show programs</button>
+      </div>
+    </form>
+
+    <div id="results" class="grid" aria-live="polite">
+      <!-- results appear here -->
+    </div>
+
+    <p style="margin-top:18px;color:var(--muted)">Can't find what you need? <a href="create-opportunity.html">Create a new opportunity</a>.</p>
+    <p style="margin-top:16px"><a href="index.html">Back to Home</a></p>
+  </div>
+
+  <!-- Modal for signup -->
+  <div id="signupModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <h3 id="modalTitle">Sign Up</h3>
+      <input type="text" id="childName" placeholder="Child's Name" required />
+      <input type="email" id="childEmail" placeholder="Parent Email" required />
+      <select id="childAge">
+        <option>6-8</option>
+        <option>9-11</option>
+        <option>12-14</option>
+        <option>15-18</option>
+      </select>
+      <button onclick="submitSignup()">Sign Up</button>
+      <p id="signupMsg" style="color:green;display:none;margin-top:12px;font-weight:700;"></p>
+    </div>
+  </div>
+
+  <script>
+    // Sample opportunities including more fillers
+    const sample = [
+  // Arts and crafts
+  {title:'Art Explorers', age:'6-8', interest:'arts', desc:'Simple low-cost craft projects.'},
+  {title:'Mini Painters', age:'6-8', interest:'arts', desc:'Guided painting sessions for beginners.'},
+  {title:'Creative Hands', age:'6-8', interest:'arts', desc:'Fun DIY projects for young creators.'},
+  {title:'Little Sculptors', age:'6-8', interest:'arts', desc:'Clay and sculpting activities.'},
+  {title:'Young Designers', age:'9-11', interest:'arts', desc:'Learn design and color theory basics.'},
+  {title:'Crafty Kids', age:'9-11', interest:'arts', desc:'Hands-on crafts with household items.'},
+  {title:'Art Club', age:'9-11', interest:'arts', desc:'Group art projects and mini exhibitions.'},
+  {title:'Junior Painters', age:'9-11', interest:'arts', desc:'Painting techniques for kids.'},
+  {title:'Teen Art Club', age:'12-14', interest:'arts', desc:'Advanced art tutorials and portfolio tips.'},
+  {title:'Creative Teens', age:'12-14', interest:'arts', desc:'Drawing, painting, and mixed media workshops.'},
+  {title:'Portfolio Prep', age:'12-14', interest:'arts', desc:'Prepare for art school applications.'},
+  {title:'Teen Designers', age:'12-14', interest:'arts', desc:'Learn graphic design fundamentals.'},
+  {title:'Master Artists', age:'15-18', interest:'arts', desc:'Advanced techniques and mentorship.'},
+  {title:'Teen Creatives', age:'15-18', interest:'arts', desc:'Collaborative art projects.'},
+  {title:'Digital Art Studio', age:'15-18', interest:'arts', desc:'Learn digital painting and illustration.'},
+  {title:'Portfolio Builder', age:'15-18', interest:'arts', desc:'Create a strong portfolio for college.'},
+
+  // Music
+  {title:'Piano Stars', age:'6-8', interest:'music', desc:'Beginner piano lessons online.'},
+  {title:'Little Singers', age:'6-8', interest:'music', desc:'Simple songs and vocal exercises.'},
+  {title:'Music Makers', age:'6-8', interest:'music', desc:'Introduction to rhythm and instruments.'},
+  {title:'Junior Band', age:'6-8', interest:'music', desc:'Basic ensemble practice online.'},
+  {title:'Junior Beats', age:'9-11', interest:'music', desc:'Learn drums and rhythm basics.'},
+  {title:'Home Music Club', age:'9-11', interest:'music', desc:'Weekly guided practice sessions.'},
+  {title:'Sing Along', age:'9-11', interest:'music', desc:'Vocal practice with songs for kids.'},
+  {title:'Keyboard Fun', age:'9-11', interest:'music', desc:'Learn keyboard basics online.'},
+  {title:'Vocal Voices', age:'12-14', interest:'music', desc:'Singing techniques for teens.'},
+  {title:'Teen Guitar Club', age:'12-14', interest:'music', desc:'Online guitar lessons and jam sessions.'},
+  {title:'Music Theory Teens', age:'12-14', interest:'music', desc:'Learn music reading and theory.'},
+  {title:'Choir Online', age:'12-14', interest:'music', desc:'Virtual choir practice and performances.'},
+  {title:'Advanced Guitar', age:'15-18', interest:'music', desc:'Techniques and advanced projects.'},
+  {title:'Teen Composers', age:'15-18', interest:'music', desc:'Write and record your own music.'},
+  {title:'Digital Music Studio', age:'15-18', interest:'music', desc:'Learn production and mixing.'},
+  {title:'Performance Prep', age:'15-18', interest:'music', desc:'Prepare for recitals and competitions.'},
+
+  // STEM
+  {title:'STEM Explorers', age:'6-8', interest:'stem', desc:'Introduction to science and engineering.'},
+  {title:'Mini Scientists', age:'6-8', interest:'stem', desc:'Simple experiments at home.'},
+  {title:'Young Engineers', age:'6-8', interest:'stem', desc:'Hands-on building challenges.'},
+  {title:'Coding Scratch', age:'6-8', interest:'stem', desc:'Basic block-based coding fun.'},
+  {title:'Young Scientists', age:'9-11', interest:'stem', desc:'Fun science experiments at home.'},
+  {title:'Junior Robotics', age:'9-11', interest:'stem', desc:'Intro to building robots.'},
+  {title:'STEM Pioneers', age:'9-11', interest:'stem', desc:'Logic puzzles and challenges.'},
+  {title:'Maker Kids', age:'9-11', interest:'stem', desc:'DIY engineering projects.'},
+  {title:'Coding Challenge', age:'12-14', interest:'stem', desc:'Logic puzzles and STEM challenges.'},
+  {title:'Robotics Teens', age:'12-14', interest:'stem', desc:'Intermediate robotics projects.'},
+  {title:'Teen Innovators', age:'12-14', interest:'stem', desc:'Project-based STEM learning for teens.'},
+  {title:'Science Lab Online', age:'12-14', interest:'stem', desc:'Virtual chemistry and physics experiments.'},
+  {title:'STEM Leaders', age:'15-18', interest:'stem', desc:'Advanced problem-solving and mentorship.'},
+  {title:'Engineering Teens', age:'15-18', interest:'stem', desc:'Build complex machines online.'},
+  {title:'Coding Teens', age:'15-18', interest:'stem', desc:'Learn Python, JavaScript, and more.'},
+  {title:'Research Projects', age:'15-18', interest:'stem', desc:'Participate in virtual science projects.'},
+
+  // Sports
+  {title:'Mini Movers', age:'6-8', interest:'sports', desc:'Fun indoor and outdoor exercises for young kids.'},
+  {title:'Little Athletes', age:'6-8', interest:'sports', desc:'Basic movement and coordination games.'},
+  {title:'Gym Kids', age:'6-8', interest:'sports', desc:'Simple exercises to get active.'},
+  {title:'Active Beginners', age:'6-8', interest:'sports', desc:'Engaging activities for energy release.'},
+  {title:'FitKids at Home', age:'9-11', interest:'sports', desc:'Bodyweight games and movement sessions.'},
+  {title:'Active Kids', age:'9-11', interest:'sports', desc:'Daily active challenges for children.'},
+  {title:'Youth Soccer Skills', age:'9-11', interest:'sports', desc:'Soccer drills and practice routines.'},
+  {title:'Junior Fitness', age:'9-11', interest:'sports', desc:'Fun home exercise routines.'},
+  {title:'Teen Fitness Club', age:'12-14', interest:'sports', desc:'Strength, cardio, and flexibility workouts.'},
+  {title:'Sports Lab', age:'12-14', interest:'sports', desc:'Explore multiple sports activities online.'},
+  {title:'Athlete Training', age:'12-14', interest:'sports', desc:'Skill-focused sports practice for teens.'},
+  {title:'Teen Yoga', age:'12-14', interest:'sports', desc:'Mind-body fitness for teenagers.'},
+  {title:'Advanced Training', age:'15-18', interest:'sports', desc:'High-level training and mentorship.'},
+  {title:'Fitness Teens', age:'15-18', interest:'sports', desc:'Strength, endurance, and mobility programs.'},
+  {title:'Sports Tactics', age:'15-18', interest:'sports', desc:'Strategy and team sports coaching.'},
+  {title:'Yoga & Wellness', age:'15-18', interest:'sports', desc:'Focus on fitness, flexibility, and mindfulness.'},
+
+  // Coding
+  {title:'Scratch Adventures', age:'6-8', interest:'coding', desc:'Creative storytelling through Scratch coding.'},
+  {title:'Code with Blocks', age:'6-8', interest:'coding', desc:'Fun block coding activities for beginners.'},
+  {title:'Junior Coders', age:'6-8', interest:'coding', desc:'Intro to logic and sequencing.'},
+  {title:'Mini Programmers', age:'6-8', interest:'coding', desc:'Games and puzzles for coding basics.'},
+  {title:'Intro to Scratch', age:'9-11', interest:'coding', desc:'Beginner block-based coding course.'},
+  {title:'Python Basics', age:'9-11', interest:'coding', desc:'Learn Python fundamentals.'},
+  {title:'Web Coding 101', age:'9-11', interest:'coding', desc:'HTML and CSS projects for kids.'},
+  {title:'Junior JavaScript', age:'9-11', interest:'coding', desc:'Simple JavaScript projects for beginners.'},
+  {title:'Code with Python', age:'12-14', interest:'coding', desc:'Intermediate Python projects.'},
+  {title:'Web Development 101', age:'12-14', interest:'coding', desc:'Build simple websites and HTML projects.'},
+  {title:'Game Design', age:'12-14', interest:'coding', desc:'Create your first games using code.'},
+  {title:'Teen Coders', age:'12-14', interest:'coding', desc:'Work on real projects and debugging skills.'},
+  {title:'Code Teens', age:'15-18', interest:'coding', desc:'Advanced Python, JavaScript, and web projects.'},
+  {title:'App Development', age:'15-18', interest:'coding', desc:'Build mobile apps and web apps.'},
+  {title:'Web Design Teens', age:'15-18', interest:'coding', desc:'Full-stack web development basics.'},
+  {title:'Programming Projects', age:'15-18', interest:'coding', desc:'Work on complex, real-world coding challenges.'}
+];
+
+    function getOpportunities(){
+      const stored = JSON.parse(localStorage.getItem('opportunities')) || [];
+      return sample.concat(stored);
+    }
+
+    function showResults(){
+      const age = document.getElementById('age').value;
+      const interest = document.getElementById('interest').value;
+      const all = getOpportunities();
+      const results = all.filter(s => s.age === age && s.interest === interest);
+      const container = document.getElementById('results');
+      container.innerHTML = '';
+
+      if(results.length === 0){
+        container.innerHTML = `<div style="grid-column:1/-1;padding:16px;background:#fff;border-radius:10px">No matches found. Try a different filter or <a href="create-opportunity.html">create an opportunity</a>.</div>`;
+        return;
+      }
+
+      results.forEach(r => {
+        const el = document.createElement('div');
+        el.className = 'card';
+        el.innerHTML = `
+          <h3>${r.title}</h3>
+          <p>${r.desc}</p>
+          <p><strong>Age:</strong> ${r.age} • <strong>Interest:</strong> ${r.interest}</p>
+          <button class="signup-btn" onclick="openModal('${r.title}')">Sign up</button>
+        `;
+        container.appendChild(el);
+      });
+    }
+
+    // Modal functionality
+    let selectedProgram = '';
+    function openModal(title){
+      selectedProgram = title;
+      document.getElementById('modalTitle').innerText = `Sign Up for "${title}"`;
+      document.getElementById('childName').value = '';
+      document.getElementById('childEmail').value = '';
+      document.getElementById('childAge').value = document.getElementById('age').value;
+      document.getElementById('signupMsg').style.display = 'none';
+      document.getElementById('signupModal').style.display = 'flex';
+    }
+    function closeModal(){
+      document.getElementById('signupModal').style.display = 'none';
+    }
+    function submitSignup(){
+      const name = document.getElementById('childName').value.trim();
+      const email = document.getElementById('childEmail').value.trim();
+      if(!name || !email){
+        alert('Please fill in all required fields.');
+        return;
+      }
+      document.getElementById('signupMsg').innerText = 'You are all set! More information will be available in the email being sent.';
+      document.getElementById('signupMsg').style.display = 'block';
+      setTimeout(closeModal,3000);
+    }
+
+    window.onload = showResults;
+  </script>
+</body>
+</html>

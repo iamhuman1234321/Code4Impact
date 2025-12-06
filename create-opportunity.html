@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ConnectKids | Create an Opportunity</title>
+<style>
+  :root{--accent:#2563eb;--muted:#6b7280;--card:#ffffff;--bg:#f9fafb}
+  body{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:0;background:var(--bg);color:#111}
+  .container{max-width:800px;margin:0 auto;padding:28px}
+  h1{color:var(--accent);margin-bottom:8px}
+  p{color:var(--muted)}
+  .form-card{background:#fff;padding:24px;border-radius:16px;box-shadow:0 6px 20px rgba(16,24,40,0.08);margin-top:16px}
+  label{display:block;margin-top:12px;font-weight:600}
+  input,select,textarea{width:100%;padding:10px;margin-top:6px;border-radius:10px;border:1px solid #e6e9ef; font-size:14px;}
+  textarea{resize:vertical}
+  button{margin-top:18px;padding:12px 18px;border-radius:12px;border:none;background:var(--accent);color:#fff;font-weight:700;cursor:pointer;}
+  button:hover{opacity:0.9}
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Create an Opportunity</h1>
+    <p>Share a free extracurricular offering so families can find and sign up. Required fields are marked.</p>
+
+    <div class="form-card">
+      <label>Opportunity Title *</label>
+      <input id="title" placeholder="Enter title of program"/>
+
+      <label>Target Age Range *</label>
+      <select id="age">
+        <option>6-8</option>
+        <option>9-11</option>
+        <option>12-14</option>
+        <option>15-18</option>
+      </select>
+
+      <label>Interest *</label>
+      <select id="interest">
+        <option>arts</option>
+        <option>music</option>
+        <option>stem</option>
+        <option>sports</option>
+        <option>coding</option>
+      </select>
+
+      <label>Short description *</label>
+      <textarea id="desc" rows="4" placeholder="Briefly describe the program"></textarea>
+
+      <label>Platform / Link *</label>
+      <input id="link" placeholder="Website or platform URL"/>
+
+      <label>Volunteer / Organization name</label>
+      <input id="org" placeholder="Optional"/>
+
+      <button onclick="submitOpportunity()">Publish opportunity</button>
+    </div>
+
+    <p style="margin-top:12px;color:var(--muted)">Note: This demo uses local storage to persist opportunities locally. In a real deployment, submissions would be moderated and stored on a server.</p>
+
+    <p style="margin-top:16px"><a href="index.html">Back to Home</a></p>
+  </div>
+
+  <script>
+    function submitOpportunity(){
+      const title = document.getElementById('title').value.trim();
+      const age = document.getElementById('age').value;
+      const interest = document.getElementById('interest').value;
+      const desc = document.getElementById('desc').value.trim();
+      const link = document.getElementById('link').value.trim();
+      const org = document.getElementById('org').value.trim();
+
+      if(!title || !desc || !link){
+        alert('Please complete all required fields.');
+        return;
+      }
+
+      // Build opportunity object
+      const newOp = { title, age, interest, desc, link, org };
+
+      // Get existing opportunities from localStorage
+      const stored = JSON.parse(localStorage.getItem('opportunities')) || [];
+
+      // Add new opportunity
+      stored.push(newOp);
+
+      // Save back to localStorage
+      localStorage.setItem('opportunities', JSON.stringify(stored));
+
+      alert('Thank you! Your opportunity has been added locally.');
+
+      // Clear form
+      document.getElementById('title').value = '';
+      document.getElementById('desc').value = '';
+      document.getElementById('link').value = '';
+      document.getElementById('org').value = '';
+    }
+  </script>
+</body>
+</html>
